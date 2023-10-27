@@ -58,7 +58,7 @@ class Calculator(Tk):
         self.inputLabel: Label = Label(
             displayFlame,
             textvariable=self.inputStringVar,
-            font=(fontName, 35),
+            font=(fontName, 22),
             anchor=E,
         )
 
@@ -418,7 +418,7 @@ class Calculator(Tk):
             input = int(self.input)
 
         # 小数点以下のゼロに対応
-        strInput: str = str(input)
+        strInput: str = f"{input:,}"
         for x in range(self.decimalZeroCount):
             strInput += "0"
 
