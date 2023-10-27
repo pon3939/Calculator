@@ -108,6 +108,10 @@ class Calculator(Tk):
             event Event: イベント
         """
         buttonText = event.widget["text"]
+        if self.isErrorOccurred and buttonText != "C":
+            # エラー時はクリア以外不可
+            return
+
         if buttonText == "+":
             self.inputOperation(Operation.ADDITION)
         elif buttonText == "-":
@@ -155,6 +159,10 @@ class Calculator(Tk):
             event Event: イベント
         """
         pressedKey: str = event.keysym
+        if self.isErrorOccurred and pressedKey != "Escape":
+            # エラー時はクリア以外不可
+            return
+
         if pressedKey == "plus":
             self.inputOperation(Operation.ADDITION)
         elif pressedKey == "minus":
@@ -265,6 +273,12 @@ class Calculator(Tk):
         else:
             raise Exception("不明なOperationです")
 
+        # 桁数が有効範囲を超えている場合はエラーもしくは四捨五入
+        self.result = round(self.result, self.DECIMAL_DIGITS)
+        if self.result >= 10**self.INTEGER_DIGITS:
+            self.isErrorOccurred = True
+            self.errorMessage = f"整数部が{self.INTEGER_DIGITS}桁を超えた"
+
         # 命令を記憶して入力を初期化
         self.lastOperation = operation
         self.clearEntry()
@@ -304,6 +318,8 @@ class Calculator(Tk):
         self.lastOperation: Operation = Operation.INITIAL
         self.previousFormula: str = ""
         self.result: float = 0.0
+        self.isErrorOccurred: bool = False
+        self.errorMessage: str = ""
         self.clearEntry()
         self.clearMemory()
 
@@ -387,6 +403,12 @@ class Calculator(Tk):
         再描画
 
         """
+        # エラー
+        if self.isErrorOccurred:
+            self.inputStringVar.set(self.errorMessage)
+            self.formulaStringVar.set("")
+            return
+
         # 計算結果
         formula: str = ""
         result: float = self.result
