@@ -255,7 +255,7 @@ class Calculator(Tk):
             if self.isInteger(self.input):
                 # 整数の場合は小数点以下を非表示
                 strInput = str(int(self.input))
-            self.previousFormula = self.formulaStringVar.get() + strInput
+            self.previousFormula = self.formulaStringVar.get() + strInput + "="
 
         # 計算
         if self.lastOperation == Operation.INITIAL:
