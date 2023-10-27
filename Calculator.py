@@ -33,6 +33,7 @@ class Calculator(Tk):
 
         # 変数の初期化
         self.clear()
+        self.clearMemory()
 
         # コントロールのフォント
         fontName: str = "meiryo"
@@ -325,7 +326,6 @@ class Calculator(Tk):
         self.isErrorOccurred: bool = False
         self.errorMessage: str = ""
         self.clearEntry()
-        self.clearMemory()
 
     def clearEntry(self):
         """
