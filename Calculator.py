@@ -128,15 +128,15 @@ class Calculator(Tk):
             else:
                 self.clearEntry()
         elif buttonText == "MR":
-            pass
+            self.callMemory()
         elif buttonText == "M+":
-            pass
+            self.addMemory()
         elif buttonText == "M-":
-            pass
+            self.subtractMemory()
         elif buttonText == "MS":
-            pass
+            self.saveMemory()
         elif buttonText == "MC":
-            pass
+            self.clearMemory()
         else:
             # 数字
             self.inputNumber(int(buttonText))
@@ -270,15 +270,11 @@ class Calculator(Tk):
         各変数を初期化
 
         """
-        # 最後に実行した命令
         self.lastOperation: Operation = Operation.INITIAL
         self.previousFormula: str = ""
-
-        # 計算結果
         self.result: float = 0.0
-
-        # 入力を初期化
         self.clearEntry()
+        self.clearMemory()
 
     def clearEntry(self):
         """
@@ -294,6 +290,65 @@ class Calculator(Tk):
 
         # 入力と計算結果
         self.input: float = 0.0
+
+    def callMemory(self):
+        """
+
+        メモリー呼び出し
+
+        """
+        if self.lastOperation == Operation.EQUAL:
+            # イコール押下直後は初期化する
+            self.lastOperation = Operation.INITIAL
+
+        self.input = self.memory
+
+    def clearMemory(self):
+        """
+
+        メモリークリア
+
+        """
+        self.memory = 0.0
+
+    def saveMemory(self):
+        """
+
+        メモリー保存
+
+        """
+        input: float = self.input
+        if self.lastOperation == Operation.EQUAL:
+            # イコール押下直後は計算結果を使用
+            input = self.result
+
+        self.memory = input
+
+    def addMemory(self):
+        """
+
+        メモリー加算
+
+        """
+        input: float = self.input
+        if self.lastOperation == Operation.EQUAL:
+            # イコール押下直後は計算結果を使用
+            input = self.result
+
+        self.memory += input
+
+    def subtractMemory(self):
+        """
+
+        メモリー減算
+
+        """
+        input: float = self.input
+        if self.lastOperation == Operation.EQUAL:
+            # イコール押下直後は計算結果を使用
+            input = self.result
+
+        self.memory -= input
 
     def redraw(self):
         """
