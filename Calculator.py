@@ -93,6 +93,9 @@ class Calculator(Tk):
                 # ボタン押下時の処理を設定
                 button.bind("<Button-1>", self.buttonClicked)
 
+        # キーボード押下時の処理
+        self.bind("<KeyPress>", self.keyPressed)
+
         # ラベルを描画
         self.redraw()
 
@@ -140,6 +143,34 @@ class Calculator(Tk):
         else:
             # 数字
             self.inputNumber(int(buttonText))
+
+        self.redraw()
+
+    def keyPressed(self, event: Event):
+        """
+
+        キーボード押下時の処理
+
+        Args:
+            event Event: イベント
+        """
+        pressedKey: str = event.keysym
+        if pressedKey == "plus":
+            self.inputOperation(Operation.ADDITION)
+        elif pressedKey == "minus":
+            self.inputOperation(Operation.SUBTRACT)
+        elif pressedKey == "asterisk":
+            self.inputOperation(Operation.MULTIPLICATION)
+        elif pressedKey == "slash":
+            self.inputOperation(Operation.DIVISION)
+        elif pressedKey == "Return":
+            self.inputOperation(Operation.EQUAL)
+        elif pressedKey == "period":
+            self.inputDecimalPoint()
+        elif pressedKey == "Escape":
+            self.clear()
+        elif pressedKey in map(lambda x: str(x), range(10)):
+            self.inputNumber(int(pressedKey))
 
         self.redraw()
 
