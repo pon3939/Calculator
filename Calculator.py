@@ -1,73 +1,71 @@
 # -*- coding: utf8 -*-
 
-from customtkinter import (
-    BOTH,
-    TOP,
-    CTk,
-    CTkButton,
-    CTkFrame,
-    CTkLabel,
-    E,
-    StringVar,
-)
+from re import search
+from tkinter import BOTH, TOP, Button, E, Event, Frame, Label, StringVar, Tk
+
+from Operation import Operation
 
 """
 電卓クラス
 """
 
 
-class Calculator(CTk):
+class Calculator(Tk):
     """
 
     電卓クラス
 
-    Attributes:
-        input (StringVar): 計算結果
-        formula (StringVar): 計算式
-
     """
+
+    # 整数部の桁数
+    INTEGER_DIGITS = 12
+
+    # 小数部の桁数
+    DECIMAL_DIGITS = 3
 
     def __init__(self):
         """
+
         コンストラクター
+
         """
         super().__init__()
 
-        # コントロールのフォント
-        font: str = "meiryo"
-
         # 変数の初期化
-        self.input: StringVar = StringVar()
-        self.formula: StringVar = StringVar()
         self.clear()
+
+        # コントロールのフォント
+        fontName: str = "meiryo"
 
         # タイトル
         self.title("電卓")
 
         # 式と計算結果のフレーム
-        displayFlame: CTkFrame = CTkFrame(self)
-        displayFlame.pack(side=TOP, fill=BOTH, padx=2, pady=2)
+        displayFlame: Frame = Frame(self)
+        displayFlame.pack(side=TOP, fill=BOTH, padx=10)
 
         # 式
-        formulaLabel: CTkLabel = CTkLabel(
+        self.formulaStringVar: StringVar = StringVar()
+        Label(
             displayFlame,
-            textvariable=self.formula,
-            font=(font, 15),
+            textvariable=self.formulaStringVar,
+            font=(fontName, 15),
             anchor=E,
-        )
+        ).pack(side=TOP, fill=BOTH)
 
         # 計算結果
-        inputLabel: CTkLabel = CTkLabel(
+        self.inputStringVar: StringVar = StringVar()
+        self.inputLabel: Label = Label(
             displayFlame,
-            textvariable=self.input,
-            font=(font, 30),
+            textvariable=self.inputStringVar,
+            font=(fontName, 35),
             anchor=E,
         )
-        formulaLabel.pack(side=TOP, fill=BOTH, padx=10)
-        inputLabel.pack(side=TOP, fill=BOTH, padx=10)
+
+        self.inputLabel.pack(side=TOP, fill=BOTH)
 
         # ボタンのフレーム
-        buttonFrame = CTkFrame(self)
+        buttonFrame = Frame(self)
         buttonFrame.pack(side=TOP, padx=2, pady=2)
 
         # ボタン
@@ -81,20 +79,276 @@ class Calculator(CTk):
         ]
         for buttonTextsRow in buttonTexts:
             for buttonText in buttonTextsRow:
-                button = CTkButton(
+                button: Button = Button(
                     buttonFrame,
                     text=buttonText,
-                    font=(font, 15),
-                    width=80,
-                    height=50,
+                    font=(fontName, 15),
+                    width=6,
+                    height=1,
                 )
                 row = buttonTexts.index(buttonTextsRow)
                 column = buttonTextsRow.index(buttonText)
                 button.grid(row=row, column=column, padx=1, pady=1)
 
+                # ボタン押下時の処理を設定
+                button.bind("<Button-1>", self.buttonClicked)
+
+        # ラベルを描画
+        self.redraw()
+
+    def buttonClicked(self, event: Event):
+        """
+
+        ボタン押下時の処理
+
+        Args:
+            event Event: イベント
+        """
+        buttonText = event.widget["text"]
+        if buttonText == "+":
+            self.inputOperation(Operation.ADDITION)
+        elif buttonText == "-":
+            self.inputOperation(Operation.SUBTRACT)
+        elif buttonText == "*":
+            self.inputOperation(Operation.MULTIPLICATION)
+        elif buttonText == "/":
+            self.inputOperation(Operation.DIVISION)
+        elif buttonText == "=":
+            self.inputOperation(Operation.EQUAL)
+        elif buttonText == ".":
+            self.inputDecimalPoint()
+        elif buttonText == "+/-":
+            self.changePlusMinus()
+        elif buttonText == "C":
+            self.clear()
+        elif buttonText == "CE":
+            if self.lastOperation == Operation.EQUAL:
+                # イコール押下時はクリアーと同じ処理を行う
+                self.clear()
+            else:
+                self.clearEntry()
+        elif buttonText == "MR":
+            pass
+        elif buttonText == "M+":
+            pass
+        elif buttonText == "M-":
+            pass
+        elif buttonText == "MS":
+            pass
+        elif buttonText == "MC":
+            pass
+        else:
+            # 数字
+            self.inputNumber(int(buttonText))
+
+        self.redraw()
+
+    def inputNumber(self, number: int):
+        """
+
+        数字入力
+
+        Args:
+            number int: 入力された数字
+        """
+        if self.lastOperation == Operation.EQUAL:
+            # イコール押下直後は初期化する
+            self.clear()
+
+        if self.isDecimalPointInput:
+            # 小数
+            if number == 0:
+                # 小数点以下のゼロは数値的に変化しないため回数を覚えておく
+                self.decimalZeroCount += 1
+                return
+
+            # 小数部の桁数を数える
+            strInput: str = str(self.input)
+            decimalPart: str = search(r"\..+", strInput).group()
+
+            # 小数点が含まれるため-1
+            decimalDigits: int = len(decimalPart) - 1
+            if decimalDigits >= self.DECIMAL_DIGITS:
+                # 対応桁数を超えたため何もしない
+                return
+
+            if self.isInteger(self.input):
+                # 整数(小数点押下直後)
+                decimalDigits = 0
+
+            addNumber: float = number
+            for x in range(decimalDigits + 1 + self.decimalZeroCount):
+                addNumber /= 10
+
+            self.input += addNumber
+
+            # 稀に誤差が発生するため四捨五入
+            self.input = round(self.input, self.DECIMAL_DIGITS)
+
+            self.decimalZeroCount = 0
+        else:
+            # 整数
+            # 整数部の桁数を数える
+            strInput: str = str(self.input)
+            integerPart: str = search(r".+\.", strInput).group()
+
+            # 小数点が含まれるため-1
+            if len(integerPart) - 1 >= self.INTEGER_DIGITS:
+                # 対応桁数を超えたため何もしない
+                return
+
+            self.input = self.input * 10 + number
+
+    def inputOperation(self, operation: Operation):
+        """
+
+        四則演算、イコールの押下
+
+        Args:
+            operation Operation: 入力された命令
+        """
+        # イコール押下時は表示用に計算式を覚えておく
+        if (
+            operation == Operation.EQUAL
+            and self.lastOperation != Operation.EQUAL
+        ):
+            strInput: str = str(self.input)
+            if self.isInteger(self.input):
+                # 整数の場合は小数点以下を非表示
+                strInput = str(int(self.input))
+            self.previousFormula = self.formulaStringVar.get() + strInput
+
+        # 計算
+        if self.lastOperation == Operation.INITIAL:
+            self.result = self.input
+        elif self.lastOperation == Operation.ADDITION:
+            self.result += self.input
+        elif self.lastOperation == Operation.SUBTRACT:
+            self.result -= self.input
+        elif self.lastOperation == Operation.MULTIPLICATION:
+            self.result *= self.input
+        elif self.lastOperation == Operation.DIVISION:
+            self.result /= self.input
+        elif self.lastOperation == Operation.EQUAL:
+            pass
+        else:
+            raise Exception("不明なOperationです")
+
+        # 命令を記憶して入力を初期化
+        self.lastOperation = operation
+        self.clearEntry()
+
+    def inputDecimalPoint(self):
+        """
+
+        小数点入力
+
+        """
+        if self.lastOperation == Operation.EQUAL:
+            # イコール押下直後は初期化する
+            self.lastOperation = Operation.INITIAL
+
+        # 小数点入力済みの場合は何もしない
+        if not self.isDecimalPointInput:
+            self.isDecimalPointInput = True
+
+    def changePlusMinus(self):
+        """
+
+        入力値の正負を逆転する
+
+        """
+        if self.lastOperation == Operation.EQUAL:
+            # イコール押下直後は初期化する
+            self.lastOperation = Operation.INITIAL
+
+        self.input *= -1
+
     def clear(self):
+        """クリアー
+
+        各変数を初期化
+
         """
-        クリアー
+        # 最後に実行した命令
+        self.lastOperation: Operation = Operation.INITIAL
+        self.previousFormula: str = ""
+
+        # 計算結果
+        self.result: float = 0.0
+
+        # 入力を初期化
+        self.clearEntry()
+
+    def clearEntry(self):
         """
-        self.input.set(0.0)
-        self.formula.set("testtest")
+
+        入力を初期化
+
+        """
+        # 小数点が入力されたか
+        self.isDecimalPointInput: bool = False
+
+        # 小数点以下で0を入力した回数
+        self.decimalZeroCount: int = 0
+
+        # 入力と計算結果
+        self.input: float = 0.0
+
+    def redraw(self):
+        """
+
+        再描画
+
+        """
+        # 計算結果
+        formula: str = ""
+        result: float = self.result
+        if self.isInteger(self.result):
+            # 整数の場合は小数点以下を非表示
+            result = int(self.result)
+
+        strResult: str = str(result)
+        if self.lastOperation == Operation.INITIAL:
+            pass
+        elif self.lastOperation == Operation.ADDITION:
+            formula = strResult + "+"
+        elif self.lastOperation == Operation.SUBTRACT:
+            formula = strResult + "-"
+        elif self.lastOperation == Operation.MULTIPLICATION:
+            formula = strResult + "*"
+        elif self.lastOperation == Operation.DIVISION:
+            formula = strResult + "/"
+        elif self.lastOperation == Operation.EQUAL:
+            formula = self.previousFormula
+            self.input = self.result
+        else:
+            raise Exception("不明なOperationです")
+
+        # 入力
+        input: float = self.input
+        if self.isInteger(self.input):
+            # 整数の場合は小数点以下を非表示
+            input = int(self.input)
+
+        # 小数点以下のゼロに対応
+        strInput: str = str(input)
+        for x in range(self.decimalZeroCount):
+            strInput += "0"
+
+        # 描画
+        self.inputStringVar.set(strInput)
+        self.formulaStringVar.set(formula)
+
+    def isInteger(self, number: float) -> bool:
+        """
+
+        数値が整数か判定
+
+        Args:
+            number float: 判定する数値
+
+        Returns:
+            bool: 整数であればTrue
+        """
+        return number == int(number)
