@@ -59,7 +59,7 @@ class Calculator(Tk):
         self.inputLabel: Label = Label(
             displayFlame,
             textvariable=self.inputStringVar,
-            font=(fontName, 22),
+            font=(fontName, 21),
             anchor=E,
         )
 
