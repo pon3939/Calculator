@@ -267,7 +267,11 @@ class Calculator(Tk):
         elif self.lastOperation == Operation.MULTIPLICATION:
             self.result *= self.input
         elif self.lastOperation == Operation.DIVISION:
-            self.result /= self.input
+            if self.input == 0:
+                self.isErrorOccurred = True
+                self.errorMessage = "0で割った"
+            else:
+                self.result /= self.input
         elif self.lastOperation == Operation.EQUAL:
             pass
         else:
