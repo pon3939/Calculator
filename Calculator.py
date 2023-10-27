@@ -280,7 +280,10 @@ class Calculator(Tk):
 
         # 桁数が有効範囲を超えている場合はエラーもしくは四捨五入
         self.result = round(self.result, self.DECIMAL_DIGITS)
-        if self.result >= 10**self.INTEGER_DIGITS:
+        if (
+            self.result >= 10**self.INTEGER_DIGITS
+            or self.result <= -1 * 10**self.INTEGER_DIGITS
+        ):
             self.isErrorOccurred = True
             self.errorMessage = f"整数部が{self.INTEGER_DIGITS}桁を超えた"
 
@@ -387,6 +390,13 @@ class Calculator(Tk):
             input = self.result
 
         self.memory += input
+        if (
+            self.memory >= 10**self.INTEGER_DIGITS
+            or self.memory <= -1 * 10**self.INTEGER_DIGITS
+        ):
+            self.clearMemory()
+            self.isErrorOccurred = True
+            self.errorMessage = f"メモリーが{self.INTEGER_DIGITS}桁を超えた"
 
     def subtractMemory(self):
         """
@@ -400,6 +410,13 @@ class Calculator(Tk):
             input = self.result
 
         self.memory -= input
+        if (
+            self.memory >= 10**self.INTEGER_DIGITS
+            or self.memory <= -1 * 10**self.INTEGER_DIGITS
+        ):
+            self.clearMemory()
+            self.isErrorOccurred = True
+            self.errorMessage = f"メモリーが{self.INTEGER_DIGITS}桁を超えた"
 
     def redraw(self):
         """
