@@ -136,7 +136,7 @@ class Calculator(Tk):
             else:
                 self.clearEntry()
         elif buttonText == "MR":
-            self.callMemory()
+            self.loadMemory()
         elif buttonText == "M+":
             self.addMemory()
         elif buttonText == "M-":
@@ -348,7 +348,7 @@ class Calculator(Tk):
         self.decimalZeroCount: int = 0
         self.input: float = 0.0
 
-    def callMemory(self):
+    def loadMemory(self):
         """
 
         メモリー呼び出し
