@@ -293,8 +293,8 @@ class Calculator(Tk):
 
         # 命令を記憶して入力を初期化
         self.lastOperation = operation
-        self.clearEntry()
         self.isAfterCalculating = True
+        self.clearEntry()
 
     def inputDecimalPoint(self):
         """
@@ -335,6 +335,7 @@ class Calculator(Tk):
         self.result: float = 0.0
         self.isErrorOccurred: bool = False
         self.errorMessage: str = ""
+        self.isAfterCalculating: bool = False
         self.clearEntry()
 
     def clearEntry(self):
@@ -344,7 +345,6 @@ class Calculator(Tk):
 
         """
         self.isDecimalPointInput: bool = False
-        self.isAfterCalculating: bool = False
         self.decimalZeroCount: int = 0
         self.input: float = 0.0
 
