@@ -191,6 +191,7 @@ class Calculator(Tk):
         Args:
             number int: 入力された数字
         """
+        self.isAfterCalculating = False
         if self.lastOperation == Operation.EQUAL:
             # イコール押下直後は初期化する
             self.clear()
@@ -259,7 +260,10 @@ class Calculator(Tk):
             self.previousFormula = self.formulaStringVar.get() + strInput + "="
 
         # 計算
-        if self.lastOperation == Operation.INITIAL:
+        if self.isAfterCalculating:
+            # 連続で命令を押下されたため、計算はしない
+            pass
+        elif self.lastOperation == Operation.INITIAL:
             self.result = self.input
         elif self.lastOperation == Operation.ADDITION:
             self.result += self.input
@@ -290,6 +294,7 @@ class Calculator(Tk):
         # 命令を記憶して入力を初期化
         self.lastOperation = operation
         self.clearEntry()
+        self.isAfterCalculating = True
 
     def inputDecimalPoint(self):
         """
@@ -297,6 +302,7 @@ class Calculator(Tk):
         小数点入力
 
         """
+        self.isAfterCalculating = False
         if self.lastOperation == Operation.EQUAL:
             # イコール押下直後は初期化する
             self.lastOperation = Operation.INITIAL
@@ -311,6 +317,7 @@ class Calculator(Tk):
         入力値の正負を逆転する
 
         """
+        self.isAfterCalculating = False
         if self.lastOperation == Operation.EQUAL:
             # イコール押下直後は初期化する
             self.lastOperation = Operation.INITIAL
@@ -336,13 +343,9 @@ class Calculator(Tk):
         入力を初期化
 
         """
-        # 小数点が入力されたか
         self.isDecimalPointInput: bool = False
-
-        # 小数点以下で0を入力した回数
+        self.isAfterCalculating: bool = False
         self.decimalZeroCount: int = 0
-
-        # 入力と計算結果
         self.input: float = 0.0
 
     def callMemory(self):
